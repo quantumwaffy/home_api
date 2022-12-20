@@ -9,6 +9,9 @@ class Role(base.BaseModel):
     class PydanticMeta:
         exclude = ["id"]
 
+    def __str__(self):
+        return self.name
+
 
 class User(base.BaseModel, mixins.TimeStamp):
     id: fields.IntField = fields.IntField(pk=True)
@@ -16,6 +19,12 @@ class User(base.BaseModel, mixins.TimeStamp):
     first_name: fields.CharField = fields.CharField(max_length=50, null=True)
     last_name: fields.CharField = fields.CharField(max_length=50, null=True)
     password_hash: fields.CharField = fields.CharField(max_length=128, null=True)
+    roles: fields.ManyToManyRelation["Role"] = fields.ManyToManyField(
+        "models.Role", related_name="users", through="auth__user_role"
+    )
+
+    def __str__(self) -> str:
+        return f"#{self.id} ({self.full_name()})"
 
     def full_name(self) -> str:
         if self.first_name or self.last_name:

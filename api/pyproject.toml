@@ -11,8 +11,15 @@ fastapi = "^0.88.0"
 uvicorn = "^0.20.0"
 pre-commit = "^2.20.0"
 tortoise-orm = {extras = ["asyncpg"], version = "^0.19.2"}
+python-dotenv = "^0.21.0"
+aerich = "^0.7.1"
 
 
+
+[tool.aerich]
+tortoise_orm = "core.database.TORTOISE_ORM"
+location = "./migrations"
+src_folder = "./."
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
