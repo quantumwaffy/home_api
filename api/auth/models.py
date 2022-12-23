@@ -22,6 +22,7 @@ class User(base.BaseModel, mixins.TimeStamp):
     roles: fields.ManyToManyRelation["Role"] = fields.ManyToManyField(
         "models.Role", related_name="users", through="auth__user_role"
     )
+    disabled: fields.BooleanField = fields.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f"#{self.id} ({self.full_name()})"
