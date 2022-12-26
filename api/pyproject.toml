@@ -13,6 +13,9 @@ pre-commit = "^2.20.0"
 tortoise-orm = {extras = ["asyncpg"], version = "^0.19.2"}
 python-dotenv = "^0.21.0"
 aerich = "^0.7.1"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.5"
 
 
 

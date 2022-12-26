@@ -3,8 +3,8 @@ from tortoise import fields
 
 
 class Role(base.BaseModel):
-    id: fields.IntField = fields.IntField(pk=True)
-    name: fields.CharField = fields.CharField(max_length=20, unique=True)
+    id = fields.IntField(pk=True)
+    name = fields.CharField(max_length=20, unique=True)
 
     class PydanticMeta:
         exclude = ["id"]
@@ -14,15 +14,15 @@ class Role(base.BaseModel):
 
 
 class User(base.BaseModel, mixins.TimeStamp):
-    id: fields.IntField = fields.IntField(pk=True)
-    username: fields.CharField = fields.CharField(max_length=20, unique=True)
-    first_name: fields.CharField = fields.CharField(max_length=50, null=True)
-    last_name: fields.CharField = fields.CharField(max_length=50, null=True)
-    password_hash: fields.CharField = fields.CharField(max_length=128, null=True)
+    id = fields.IntField(pk=True)
+    username = fields.CharField(max_length=20, unique=True)
+    first_name = fields.CharField(max_length=50, null=True)
+    last_name = fields.CharField(max_length=50, null=True)
+    password_hash = fields.CharField(max_length=128, null=True)
     roles: fields.ManyToManyRelation["Role"] = fields.ManyToManyField(
         "models.Role", related_name="users", through="auth__user_role"
     )
-    disabled: fields.BooleanField = fields.BooleanField(default=False)
+    disabled = fields.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f"#{self.id} ({self.full_name()})"
@@ -34,4 +34,4 @@ class User(base.BaseModel, mixins.TimeStamp):
 
     class PydanticMeta:
         computed = ["full_name"]
-        exclude = ["password_hash", "id"]
+        exclude = ["password_hash", "id", "created_at", "updated_at"]
