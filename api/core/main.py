@@ -26,7 +26,7 @@ async def startup():
     register_tortoise(
         app,
         config=database.TORTOISE_ORM,
-        generate_schemas=False,
+        generate_schemas=True,
         add_exception_handlers=True,
     )
 

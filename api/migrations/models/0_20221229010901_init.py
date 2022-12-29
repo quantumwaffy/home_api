@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS "auth__user" (
     "username" VARCHAR(20) NOT NULL UNIQUE,
     "first_name" VARCHAR(50),
     "last_name" VARCHAR(50),
-    "password_hash" VARCHAR(128),
+    "password_hash" VARCHAR(128) NOT NULL,
     "disabled" BOOL NOT NULL  DEFAULT False
 );
 CREATE TABLE IF NOT EXISTS "auth__user_role" (

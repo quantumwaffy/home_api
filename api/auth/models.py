@@ -18,7 +18,7 @@ class User(base.BaseModel, mixins.TimeStamp):
     username = fields.CharField(max_length=20, unique=True)
     first_name = fields.CharField(max_length=50, null=True)
     last_name = fields.CharField(max_length=50, null=True)
-    password_hash = fields.CharField(max_length=128, null=True)
+    password_hash = fields.CharField(max_length=128)
     roles: fields.ManyToManyRelation["Role"] = fields.ManyToManyField(
         "models.Role", related_name="users", through="auth__user_role"
     )
@@ -34,4 +34,4 @@ class User(base.BaseModel, mixins.TimeStamp):
 
     class PydanticMeta:
         computed = ["full_name"]
-        exclude = ["password_hash", "id", "created_at", "updated_at"]
+        exclude = ["password_hash", "created_at", "updated_at"]
