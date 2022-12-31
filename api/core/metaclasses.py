@@ -13,7 +13,8 @@ class BaseMetaModel(ModelMeta):
         if not meta_attr.db_table:
             meta_attr.db_table = "_".join((model_class.app_name, mcs._get_name_postfix(name)))
 
-        attrs.update(id=fields.IntField(pk=True))
+        if not attrs.get("id"):
+            attrs.update(id=fields.IntField(pk=True))
         return model_class
 
     @staticmethod
