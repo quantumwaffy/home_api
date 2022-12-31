@@ -7,9 +7,7 @@ from tortoise.contrib.fastapi import register_tortoise
 from . import utils
 
 Tortoise.init_models(
-    [
-        "auth.models",
-    ],
+    ["auth.models", "news.models"],
     "models",
 )
 

@@ -14,7 +14,6 @@ class Role(base.BaseModel):
 
 
 class User(base.BaseModel, mixins.TimeStamp):
-    id = fields.IntField(pk=True)
     username = fields.CharField(max_length=20, unique=True)
     first_name = fields.CharField(max_length=50, null=True)
     last_name = fields.CharField(max_length=50, null=True)
@@ -35,3 +34,6 @@ class User(base.BaseModel, mixins.TimeStamp):
     class PydanticMeta:
         computed = ["full_name"]
         exclude = ["password_hash", "created_at", "updated_at"]
+
+    class Meta:
+        table_description = "Registered user"

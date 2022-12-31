@@ -1,3 +1,5 @@
+import enum
+
 from tortoise import fields, models
 
 
@@ -7,3 +9,10 @@ class TimeStamp(models.Model):
 
     class Meta:
         abstract = True
+
+
+class EnumExtraMethodsMixin(enum.Enum):
+    @classmethod
+    @property
+    def values(cls) -> tuple[str, ...]:
+        return tuple(cls.__members__.values())
