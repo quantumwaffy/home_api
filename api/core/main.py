@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
+from . import utils
+
 Tortoise.init_models(
     [
         "auth.models",
@@ -29,6 +31,11 @@ async def startup():
         generate_schemas=True,
         add_exception_handlers=True,
     )
+
+
+@app.on_event("startup")
+async def create_init_db_data():
+    await utils.create_root_user()
 
 
 @app.get("/")

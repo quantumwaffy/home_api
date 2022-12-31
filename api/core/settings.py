@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     JWT_ACCESS_TOKEN_EXPIRE_MIN: int
     JWT_REFRESH_TOKEN_EXPIRE_MIN: int
+    SYS_ROOT_USERNAME: str
+    SYS_ROOT_PASSWORD: str
+    SECRET_HEADER_NAME: str
+    SECRET_HEADER_VALUE: str
 
     class Config:
         env_file = ".env"
