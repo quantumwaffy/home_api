@@ -2,6 +2,7 @@ from auth.router import router as auth_router
 from core import database, settings
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
+from graphql_app.router import router as graphql_router
 from news.currency_parser import get_currency_rate
 from news.router import router as news_router
 from tortoise import Tortoise
@@ -19,6 +20,7 @@ def _init_app() -> FastAPI:
     api: FastAPI = FastAPI()
     api.include_router(auth_router)
     api.include_router(news_router)
+    api.include_router(graphql_router, prefix="/graphql")
     return api
 
 
