@@ -21,7 +21,7 @@ no_user: HTTPException = HTTPException(
     detail="Could not find user",
 )
 
-access_token_expired: HTTPException = HTTPException(
+token_expired: HTTPException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Token expired",
     headers={"WWW-Authenticate": "Bearer"},

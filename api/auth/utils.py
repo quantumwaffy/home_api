@@ -17,7 +17,7 @@ async def get_user_from_token(token, key) -> models.User:
         payload: dict[str, Any] = jwt.decode(token, key, algorithms=[settings.JWT_ALGORITHM])
         jwt_payload: schemas.JWTPayload = schemas.JWTPayload(**payload)
         if jwt_payload.expiry_date < datetime.datetime.now():
-            raise exceptions.access_token_expired
+            raise exceptions.token_expired
     except (JWTError, ValidationError):
         raise exceptions.credentials_error
     user: models.User = await models.User.filter(username=jwt_payload.username).first()
