@@ -14,6 +14,6 @@ async def update_currency_rate(user: auth_models.User = Depends(auth_deps.get_cu
     return {"updated_count": count_objs}
 
 
-@router.get("/currency/list", response_model=schemas.BankCurrencyView)
+@router.get("/currency/list", response_model=list[schemas.BankCurrencyView])
 async def currency_list(user: auth_models.User = Depends(auth_deps.get_current_user)):  # noqa
     return await schemas.BankCurrencyView.from_queryset(models.BankCurrency.all())
