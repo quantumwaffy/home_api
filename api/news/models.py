@@ -18,6 +18,7 @@ class BankCurrency(core_base.BaseModel, core_mixins.TimeStamp):
     class Meta:
         table_description = "Bank actual currency info"
         unique_together = ("bank_name", "city_name")
+        ordering = ["id"]
 
     def __str__(self) -> str:
         return f"{self.city_name}_{self.bank_name}"

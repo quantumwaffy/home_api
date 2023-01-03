@@ -20,7 +20,7 @@ def _init_app() -> FastAPI:
     api: FastAPI = FastAPI()
     api.include_router(auth_router)
     api.include_router(news_router)
-    api.include_router(graphql_router, prefix="/graphql")
+    api.include_router(graphql_router)
     return api
 
 

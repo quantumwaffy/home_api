@@ -14,7 +14,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):  # noqa
 @router.post("/signup", status_code=status.HTTP_201_CREATED, response_model=schemas.UserView)
 async def sign_up(user_data: schemas.NewUser):
     if await models.User.filter(username=user_data.username).first():
-        raise exceptions.signup_user_exists
+        raise exceptions.BaseAuthExceptionManager.signup_user_exists
     user_data.password_hash = utils.Authenticator.get_password_hash(user_data.confirm_password)
     user: models.User = await models.User.create(**user_data.dict(exclude={"confirm_password"}))
     return await schemas.UserView.from_tortoise_orm(user)

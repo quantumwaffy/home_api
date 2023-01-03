@@ -12,17 +12,23 @@ from . import exceptions, models, schemas
 settings: Settings = settings.get_settings()
 
 
+async def check_user_perms(user: models.User | None) -> None:
+    if not user:
+        raise exceptions.BaseAuthExceptionManager.no_user
+    if user.disabled:
+        raise exceptions.BaseAuthExceptionManager.blocked_user
+
+
 async def get_user_from_token(token, key) -> models.User:
     try:
         payload: dict[str, Any] = jwt.decode(token, key, algorithms=[settings.JWT_ALGORITHM])
         jwt_payload: schemas.JWTPayload = schemas.JWTPayload(**payload)
         if jwt_payload.expiry_date < datetime.datetime.now():
-            raise exceptions.token_expired
+            raise exceptions.BaseAuthExceptionManager.token_expired
     except (JWTError, ValidationError):
-        raise exceptions.credentials_error
+        raise exceptions.BaseAuthExceptionManager.credentials_error
     user: models.User = await models.User.filter(username=jwt_payload.username).first()
-    if not user:
-        raise exceptions.no_user
+    await check_user_perms(user)
     return user
 
 
@@ -49,10 +55,9 @@ class Authenticator:
     @classmethod
     async def create_jwt_tokens(cls, username: str, password: str) -> schemas.TokenGeneratedData:
         user: models.User | None = await models.User.filter(username=username).first()
-        if not user:
-            raise exceptions.no_user
+        await check_user_perms(user)
         if not cls._verify_password(password, user.password_hash):
-            raise exceptions.authentication_error
+            raise exceptions.BaseAuthExceptionManager.authentication_error
         return schemas.TokenGeneratedData(
             access_token=cls._create_token(
                 username, settings.JWT_ACCESS_TOKEN_EXPIRE_MIN, settings.JWT_ACCESS_TOKEN_SECRET_KEY
