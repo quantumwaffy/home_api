@@ -8,7 +8,7 @@ from . import models, schemas, utils
 settings: Settings = settings.get_settings()
 
 
-async def get_authentication_user(request: Request) -> models.User:
+async def get_authenticated_user(request: Request) -> models.User:
     if (root_token := request.headers.get(settings.SECRET_HEADER_NAME)) and root_token == settings.SECRET_HEADER_VALUE:
         user: models.User = await models.User.get(username=settings.SYS_ROOT_USERNAME)
     else:
@@ -17,5 +17,5 @@ async def get_authentication_user(request: Request) -> models.User:
     return user
 
 
-async def get_current_user(user: models.User = Depends(get_authentication_user)) -> schemas.UserView:  # noqa
+async def get_current_user(user: models.User = Depends(get_authenticated_user)) -> schemas.UserView:  # noqa
     return await schemas.UserView.from_tortoise_orm(user)
