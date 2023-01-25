@@ -4,7 +4,7 @@ import strawberry
 from news import models as news_models
 from news import schemas as news_schemas
 
-from . import pagination, permissions
+from . import filters, pagination, permissions
 
 
 @strawberry.type
@@ -27,7 +27,10 @@ class BankCurrencyViewResponse:
 class Query:
     @strawberry.field(permission_classes=[permissions.IsAuthenticated])
     @pagination.Paginator(qs_schema=news_schemas.BankCurrencyView)
-    async def get_currency_rates(self, limit: int, cursor: Optional[str] = None) -> BankCurrencyViewResponse:
+    async def get_currency_rates(
+        self, limit: int, cursor: Optional[str] = None, where: Optional[filters.Filter] = None
+    ) -> BankCurrencyViewResponse:
+        print(where.db_exp())
         return news_models.BankCurrency.all()
 
 
