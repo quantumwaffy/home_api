@@ -5,5 +5,5 @@ from . import metaclasses
 
 
 @strawberry.input
-class Filter(metaclass=metaclasses.FilterMeta, model=news_schemas.BankCurrencyView):
+class BankCurrencyFilter(metaclass=metaclasses.FilterMeta, model=news_schemas.BankCurrencyView):
     ...

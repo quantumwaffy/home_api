@@ -1,6 +1,8 @@
-from typing import Generic, Optional, TypeVar
+from functools import wraps
+from typing import Any, Callable, Coroutine, Generic, Optional, TypeVar
 
 import strawberry
+from tortoise.queryset import QuerySet
 
 T = TypeVar("T")
 
@@ -14,3 +16,15 @@ class FilterLookup(Generic[T]):
     lte: Optional[T] = None
     contains: Optional[T] = None
     icontains: Optional[T] = None
+
+
+class Filter:
+    def __call__(
+        self, resolver
+    ) -> Callable[[tuple[tuple[Any, ...], ...], dict[str, dict]], Coroutine[Any, Any, QuerySet]]:
+        @wraps(resolver)
+        async def wrapper(*args: tuple[Any, ...], **kwargs) -> QuerySet:
+            resolver_qs: QuerySet = await resolver(*args, **kwargs)
+            return resolver_qs.filter(**kwargs["where"].filter_params)
+
+        return wrapper

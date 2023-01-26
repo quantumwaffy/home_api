@@ -1,28 +1,38 @@
-from typing import Any, Optional, Type, TypeVar, get_args
+from typing import Any, Mapping, Optional, Type, TypeVar, get_args
 
 from tortoise.contrib.pydantic import PydanticModel
 
 from . import base
 
-Filter = TypeVar("Filter")
+FilterClass = TypeVar("FilterClass")
 TypeHint = TypeVar("TypeHint")
 
 
 class FilterMeta(type):
-    def __new__(
-        mcs, name: str, bases: tuple[type, ...], attrs: dict, model: Optional[Type[PydanticModel]] = None
-    ) -> "Type[Filter]":
-        attrs |= {
-            mcs.db_exp.__name__: mcs.db_exp,
+    _lookup_class = base.FilterLookup
+
+    @classmethod
+    def __prepare__(mcs, name: str, bases: tuple[type, ...], **kwargs) -> Mapping[str, Any]:
+        namespace: Mapping[str, Any] = super().__prepare__(name, bases)
+
+        return namespace | {
+            mcs.filter_params.fget.__name__: mcs.filter_params,
             mcs._to_camel_case.__name__: staticmethod(mcs._to_camel_case),
             mcs._to_snake_case.__name__: staticmethod(mcs._to_snake_case),
         }
-        filter_class: "Type[Filter]" = super().__new__(mcs, name, bases, attrs)
 
-        if not model:
+    def __new__(mcs, name: str, bases: tuple[type, ...], attrs: dict, **kwargs: dict) -> "Type[FilterClass]":
+        mcs._model: Optional[Type[PydanticModel]] = kwargs.pop("model", None)
+
+        if custom_lookup_class := kwargs.pop("lookup_class", None):
+            mcs._lookup_class = custom_lookup_class
+
+        filter_class: "Type[FilterClass]" = super().__new__(mcs, name, bases, attrs)
+
+        if not mcs._model:
             return filter_class
 
-        for field, typehint in model.__annotations__.items():
+        for field, typehint in mcs._model.__annotations__.items():
             wrapped_typehints: tuple[TypeHint, ...] = get_args(typehint)
             camel_field: str = mcs._to_camel_case(field)
             filter_class.__annotations__ |= {
@@ -47,7 +57,8 @@ class FilterMeta(type):
 
         return "".join(__format(char) for char in value)
 
-    def db_exp(self) -> dict[str, Any]:
+    @property
+    def filter_params(self) -> dict[str, Any]:
         filled_filters: dict[str, Any] = {
             f"{self._to_snake_case(field)}__{lookup}": value
             for field, _filter in self.__dict__.items()

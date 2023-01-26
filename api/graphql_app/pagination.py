@@ -42,6 +42,11 @@ class Paginator:
         async def wrapper(*args: tuple[Any, ...], **kwargs) -> "schemas.BankCurrencyViewResponse":
             resolver_qs: QuerySet = await resolver(*args, **kwargs)
             self._cursor_handler: CursorHandler = self._cursor_handler_class(resolver_qs.model.__class__.__name__)
+            if not await resolver_qs.count():
+                return schemas.BankCurrencyViewResponse(
+                    currencies=await self._qs_schema.from_queryset(resolver_qs),
+                    page_meta=schemas.PageMeta(next_cursor=None),
+                )
             return await self._get_paginated_data(resolver_qs, kwargs["limit"], kwargs["cursor"])
 
         return wrapper
