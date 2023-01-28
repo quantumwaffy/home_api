@@ -18,6 +18,17 @@ class FilterLookup(Generic[T]):
     endswith: Optional[T] = None
 
 
+@strawberry.input
+class OrderLookup:
+    desc: Optional[bool] = None
+    asc: Optional[bool] = None
+
+    def get_orm_lookup(self, field: str) -> Optional[str]:
+        assert not all(self.__dict__.values()), f"Must be provided only one ordering type for '{field}'"
+        prefix: str = "" if self.__dict__["asc"] else "-"
+        return f"{prefix}{field}"
+
+
 class Filter:
     def __call__(
         self, resolver
@@ -25,6 +36,8 @@ class Filter:
         @wraps(resolver)
         async def wrapper(*args: tuple[Any, ...], **kwargs) -> QuerySet:
             resolver_qs: QuerySet = await resolver(*args, **kwargs)
-            return resolver_qs.filter(**kwargs["where"].filter_params)
+            if _filter := kwargs["where"]:
+                resolver_qs: QuerySet = resolver_qs.filter(**_filter.params)
+            return resolver_qs
 
         return wrapper

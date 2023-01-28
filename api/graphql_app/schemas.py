@@ -29,7 +29,11 @@ class Query:
     @pagination.Paginator(qs_schema=news_schemas.BankCurrencyView)
     @base.Filter()
     async def get_currency_rates(
-        self, limit: int, cursor: Optional[str] = None, where: Optional[filters.BankCurrencyFilter] = None
+        self,
+        limit: int,
+        cursor: Optional[str] = None,
+        where: Optional[filters.BankCurrencyFilter] = None,
+        order: Optional[filters.BankCurrencyOrder] = None,
     ) -> BankCurrencyViewResponse:
         return news_models.BankCurrency.all()
 

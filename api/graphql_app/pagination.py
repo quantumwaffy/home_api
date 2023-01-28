@@ -5,7 +5,7 @@ from typing import Any, Callable, Coroutine, Optional, Type
 from tortoise.contrib.pydantic import PydanticModel
 from tortoise.queryset import QuerySet
 
-from . import schemas
+from . import filters, schemas
 
 
 class CursorHandler:
@@ -47,13 +47,21 @@ class Paginator:
                     currencies=await self._qs_schema.from_queryset(resolver_qs),
                     page_meta=schemas.PageMeta(next_cursor=None),
                 )
-            return await self._get_paginated_data(resolver_qs, kwargs["limit"], kwargs["cursor"])
+            return await self._get_paginated_data(resolver_qs, kwargs["limit"], kwargs["cursor"], kwargs["order"])
 
         return wrapper
 
     async def _get_paginated_data(
-        self, data: QuerySet, limit: int, cursor: Optional[str] = None
+        self,
+        data: QuerySet,
+        limit: int,
+        cursor: Optional[str] = None,
+        order: Optional[filters.BankCurrencyOrder] = None,
     ) -> "schemas.BankCurrencyViewResponse":
+        # TODO Pagination logic must be updated for user's ordered queries
+        if order and (order_params := order.params):
+            data: QuerySet = data.order_by(*order_params)
+
         obj_id: int = (
             self._cursor_handler.decode(cursor) if cursor else getattr(await data.first(), self._pk_field_name)
         )
