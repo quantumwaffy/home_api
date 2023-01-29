@@ -20,6 +20,12 @@ class FilterLookup(Generic[T]):
     endswith: Optional[T] = None
     iendswith: Optional[T] = None
     iexact: Optional[T] = None
+    isnull: Optional[bool] = None
+    not_isnull: Optional[bool] = None
+    not_in: Optional[list[T]] = None
+    _in: Optional[list[T]] = None
+    search: Optional[str] = None
+    range: Optional[list[T]] = None
 
 
 @strawberry.input

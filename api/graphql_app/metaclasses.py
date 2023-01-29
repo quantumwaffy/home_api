@@ -72,14 +72,13 @@ class FilterMeta(BaseResolverFuncMeta):
 
     @property
     def params(self) -> dict[str, Any]:
-        filled_filters: dict[str, Any] = {
-            f"{self._to_snake_case(field)}__{lookup}": value
+        return {
+            f"{self._to_snake_case(field)}__{lookup.replace('_', '', 1) if lookup.startswith('_') else lookup}": value
             for field, _filter in self.__dict__.items()
             if _filter
             for lookup, value in _filter.__dict__.items()
             if value
         }
-        return filled_filters
 
 
 class OrderMeta(BaseResolverFuncMeta):
@@ -96,10 +95,8 @@ class OrderMeta(BaseResolverFuncMeta):
 
     @property
     def params(self) -> list[str]:
-        r = [
+        return [
             lookup
             for field, order_obj in self.__dict__.items()
             if order_obj and (lookup := order_obj.get_orm_lookup(self._to_snake_case(field)))
         ]
-        print(r)
-        return r
