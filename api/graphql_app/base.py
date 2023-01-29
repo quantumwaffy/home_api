@@ -14,8 +14,12 @@ class FilterLookup(Generic[T]):
     lt: Optional[T] = None
     lte: Optional[T] = None
     contains: Optional[T] = None
+    icontains: Optional[T] = None
     startswith: Optional[T] = None
+    istartswith: Optional[T] = None
     endswith: Optional[T] = None
+    iendswith: Optional[T] = None
+    iexact: Optional[T] = None
 
 
 @strawberry.input
