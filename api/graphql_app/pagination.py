@@ -5,7 +5,7 @@ from typing import Any, Callable, Coroutine, Optional, Type
 from tortoise.contrib.pydantic import PydanticModel
 from tortoise.queryset import QuerySet
 
-from . import schemas
+from . import filters, schemas
 
 
 class CursorHandler:
@@ -47,30 +47,38 @@ class Paginator:
                     currencies=await self._qs_schema.from_queryset(resolver_qs),
                     page_meta=schemas.PageMeta(next_cursor=None),
                 )
-            return await self._get_paginated_data(resolver_qs, kwargs["limit"], kwargs["cursor"])
+            return await self._get_paginated_data(resolver_qs, kwargs["limit"], kwargs["cursor"], kwargs["order"])
 
         return wrapper
 
     async def _get_paginated_data(
-        self, data: QuerySet, limit: int, cursor: Optional[str] = None
+        self,
+        data: QuerySet,
+        limit: int,
+        cursor: Optional[str] = None,
+        order: Optional[filters.BankCurrencyOrder] = None,
     ) -> "schemas.BankCurrencyViewResponse":
-        obj_id: int = (
-            self._cursor_handler.decode(cursor) if cursor else getattr(await data.first(), self._pk_field_name)
-        )
-        next_cursor: Optional[QuerySet] = None
 
-        data: QuerySet = data.filter(**{f"{self._pk_field_name}__gte": obj_id})
+        if order and (order_params := order.params):
+            data: QuerySet = data.order_by(*order_params)
 
-        if await data.count() > limit:
-            last_obj_id: int = getattr(
-                await data.filter(**{f"{self._pk_field_name}__lt": obj_id + limit})
-                .order_by(f"-{self._pk_field_name}")
-                .first(),
-                self._pk_field_name,
-            )
-            next_cursor: str = self._cursor_handler.encode(last_obj_id + 1)
+        data_ids: list[int] = await data.values_list(self._pk_field_name, flat=True)
+
+        first_obj_id_index: int = data_ids.index(self._cursor_handler.decode(cursor)) if cursor else 0
+
+        last_obj_id_index: int = first_obj_id_index + limit
+
+        try:
+            last_obj_id: int = data_ids[last_obj_id_index]
+        except IndexError:
+            last_obj_id_index: int = len(data_ids)
+            last_obj_id: int = data_ids[last_obj_id_index - 1]
+
+        data: QuerySet = data.filter(**{f"{self._pk_field_name}__in": data_ids[first_obj_id_index:last_obj_id_index]})
+
+        next_cursor: Optional[str] = self._cursor_handler.encode(last_obj_id) if data_ids[-1] != last_obj_id else None
 
         return schemas.BankCurrencyViewResponse(
-            currencies=await self._qs_schema.from_queryset(data.limit(limit)),
+            currencies=await self._qs_schema.from_queryset(data),
             page_meta=schemas.PageMeta(next_cursor=next_cursor),
         )
