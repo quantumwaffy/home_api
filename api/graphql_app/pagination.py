@@ -1,11 +1,14 @@
 from base64 import b64decode, b64encode
 from functools import wraps
-from typing import Any, Callable, Coroutine, Optional, Type
+from typing import Any, Callable, Coroutine, Optional, Type, TypeAlias, TypeVar
 
 from tortoise.contrib.pydantic import PydanticModel
 from tortoise.queryset import QuerySet
 
-from . import filters, schemas
+from . import metaclasses, mixins
+
+Response = TypeVar("Response")
+Resolver: TypeAlias = Callable[[tuple[tuple[Any, ...], ...], dict[str, dict]], Coroutine[Any, Any, Response]]
 
 
 class CursorHandler:
@@ -33,38 +36,52 @@ class Paginator:
         if pk_field_name:
             self._pk_field_name = pk_field_name
 
-    def __call__(
-        self, resolver
-    ) -> Callable[
-        [tuple[tuple[Any, ...], ...], dict[str, dict]], Coroutine[Any, Any, "schemas.BankCurrencyViewResponse"]
-    ]:
+    @staticmethod
+    def _get_response_type(resolver: Resolver) -> "Type[Response]":
+        response_type: "Type[Response]" = resolver.__annotations__["return"]
+        assert issubclass(
+            response_type, mixins.PageMixin
+        ), f"{response_type.__name__} must be inherited from {mixins.PageMixin.__name__}"
+        return resolver.__annotations__["return"]
+
+    def _get_response_data(self, data: list[PydanticModel], cursor: Optional[str]):
+        return self._response_type(
+            **{
+                self._response_type.data_field_name: data,
+                self._response_type.page_meta: self._response_type.page_field_type(next_cursor=cursor),
+            }
+        )
+
+    def __call__(self, resolver) -> Response:
+        self._response_type: "Type[Response]" = self._get_response_type(resolver)
+
         @wraps(resolver)
-        async def wrapper(*args: tuple[Any, ...], **kwargs) -> "schemas.BankCurrencyViewResponse":
+        async def wrapper(*args: tuple[Any, ...], **kwargs) -> Response:
             resolver_qs: QuerySet = await resolver(*args, **kwargs)
-            self._cursor_handler: CursorHandler = self._cursor_handler_class(resolver_qs.model.__class__.__name__)
+            cursor_handler: CursorHandler = self._cursor_handler_class(resolver_qs.model.__class__.__name__)
             if not await resolver_qs.count():
-                return schemas.BankCurrencyViewResponse(
-                    currencies=await self._qs_schema.from_queryset(resolver_qs),
-                    page_meta=schemas.PageMeta(next_cursor=None),
-                )
-            return await self._get_paginated_data(resolver_qs, kwargs["limit"], kwargs["cursor"], kwargs["order"])
+                return self._get_response_data(await self._qs_schema.from_queryset(resolver_qs), None)
+            return await self._get_paginated_data(
+                resolver_qs, cursor_handler, kwargs["limit"], kwargs["cursor"], kwargs["order"]
+            )
 
         return wrapper
 
     async def _get_paginated_data(
         self,
         data: QuerySet,
+        cursor_handler: CursorHandler,
         limit: int,
-        cursor: Optional[str] = None,
-        order: Optional[filters.BankCurrencyOrder] = None,
-    ) -> "schemas.BankCurrencyViewResponse":
+        cursor: Optional[str],
+        order: Optional[metaclasses.OrderClass],
+    ) -> Response:
 
         if order and (order_params := order.params):
             data: QuerySet = data.order_by(*order_params)
 
         data_ids: list[int] = await data.values_list(self._pk_field_name, flat=True)
 
-        first_obj_id_index: int = data_ids.index(self._cursor_handler.decode(cursor)) if cursor else 0
+        first_obj_id_index: int = data_ids.index(cursor_handler.decode(cursor)) if cursor else 0
 
         last_obj_id_index: int = first_obj_id_index + limit
 
@@ -76,9 +93,6 @@ class Paginator:
 
         data: QuerySet = data.filter(**{f"{self._pk_field_name}__in": data_ids[first_obj_id_index:last_obj_id_index]})
 
-        next_cursor: Optional[str] = self._cursor_handler.encode(last_obj_id) if data_ids[-1] != last_obj_id else None
+        next_cursor: Optional[str] = cursor_handler.encode(last_obj_id) if data_ids[-1] != last_obj_id else None
 
-        return schemas.BankCurrencyViewResponse(
-            currencies=await self._qs_schema.from_queryset(data),
-            page_meta=schemas.PageMeta(next_cursor=next_cursor),
-        )
+        return self._get_response_data(await self._qs_schema.from_queryset(data), next_cursor)

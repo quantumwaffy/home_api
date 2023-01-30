@@ -4,6 +4,12 @@ from typing import Any, Callable, Coroutine, Generic, Optional, TypeVar
 import strawberry
 from tortoise.queryset import QuerySet
 
+
+@strawberry.type
+class PageMeta:
+    next_cursor: Optional[str] = strawberry.field(description="Next cursor")
+
+
 T = TypeVar("T")
 
 
