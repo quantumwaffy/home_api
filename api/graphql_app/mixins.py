@@ -34,11 +34,9 @@ class PageMixin:
         type_field: Optional[DataType] = kwargs.pop(cls.__data_field_type_kwarg, None)
         assert type_field, f"Kwarg '{cls.__data_field_type_kwarg}' must be provided for '{cls.__name__}'"
 
-        field_params: dict[str, Any] = kwargs.pop(cls.__data_field_params_kwarg, {})
-
         cls.__annotations__ |= {data_field: List[type_field], cls.__page_field_name: cls._page_field_type}
 
-        setattr(cls, data_field, strawberry.field(**field_params))
+        setattr(cls, data_field, strawberry.field(**kwargs.pop(cls.__data_field_params_kwarg, {})))
         setattr(
             cls,
             cls.__page_field_name,
