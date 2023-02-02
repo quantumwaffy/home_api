@@ -42,7 +42,7 @@ class UserViewResponse(
 @strawberry.type
 class Query:
     @strawberry.field(permission_classes=[permissions.IsAuthenticated])
-    @pagination.Paginator(qs_schema=news_schemas.BankCurrencyView)
+    @pagination.Paginator()
     @base.Filter()
     async def get_currency_rates(
         self,
@@ -54,7 +54,7 @@ class Query:
         return news_models.BankCurrency.all()
 
     @strawberry.field(permission_classes=[permissions.IsAuthenticated])
-    @pagination.Paginator(qs_schema=auth_schemas.UserView)
+    @pagination.Paginator()
     @base.Filter()
     async def get_users(
         self,

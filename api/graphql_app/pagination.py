@@ -1,6 +1,6 @@
 from base64 import b64decode, b64encode
 from functools import wraps
-from typing import Any, Callable, Coroutine, Optional, Type, TypeAlias, TypeVar
+from typing import Any, Callable, Coroutine, Optional, Type, TypeAlias, TypeVar, get_args
 
 from tortoise.contrib.pydantic import PydanticModel
 from tortoise.queryset import QuerySet
@@ -31,8 +31,8 @@ class Paginator:
     _cursor_handler_class: "Type[CursorHandler]" = CursorHandler
     _pk_field_name: str = "id"
 
-    def __init__(self, qs_schema: PydanticModel, pk_field_name: Optional[str] = None) -> None:
-        self._qs_schema: PydanticModel = qs_schema
+    def __init__(self, qs_schema: Optional["Type[PydanticModel]"] = None, pk_field_name: Optional[str] = None) -> None:
+        self._qs_schema: "Type[PydanticModel]" = qs_schema
         if pk_field_name:
             self._pk_field_name = pk_field_name
 
@@ -42,7 +42,7 @@ class Paginator:
         assert issubclass(
             response_type, mixins.PageMixin
         ), f"{response_type.__name__} must be inherited from {mixins.PageMixin.__name__}"
-        return resolver.__annotations__["return"]
+        return response_type
 
     def _get_response_data(self, data: list[PydanticModel], cursor: Optional[str]):
         return self._response_type(
@@ -52,8 +52,16 @@ class Paginator:
             }
         )
 
-    def __call__(self, resolver) -> Response:
+    def _get_qs_schema(self) -> "Type[PydanticModel]":
+        if not self._qs_schema:
+            self._qs_schema: "Type[PydanticModel]" = get_args(
+                self._response_type.__annotations__[self._response_type.data_field_name]
+            )[0]._pydantic_type
+        return self._qs_schema
+
+    def __call__(self, resolver: Resolver) -> Response:
         self._response_type: "Type[Response]" = self._get_response_type(resolver)
+        self._qs_schema: "Type[PydanticModel]" = self._get_qs_schema()
 
         @wraps(resolver)
         async def wrapper(*args: tuple[Any, ...], **kwargs) -> Response:
