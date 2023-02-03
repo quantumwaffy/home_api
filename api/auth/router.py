@@ -20,8 +20,8 @@ async def sign_up(user_data: schemas.NewUser):
     return await schemas.UserView.from_tortoise_orm(user)
 
 
-@router.get("/me", response_model=schemas.UserView)
-async def get_me(user: models.User = Depends(dependencies.get_current_user)):  # noqa
+@router.get("/me", response_model=schemas.UserDB)
+async def get_me(user: schemas.UserDB = Depends(dependencies.get_current_user)):  # noqa
     return user
 
 

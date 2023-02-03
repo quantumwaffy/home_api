@@ -17,5 +17,5 @@ async def get_authenticated_user(request: Request) -> models.User:
     return user
 
 
-async def get_current_user(user: models.User = Depends(get_authenticated_user)) -> schemas.UserView:  # noqa
-    return await schemas.UserView.from_tortoise_orm(user)
+async def get_current_user(user: models.User = Depends(get_authenticated_user)) -> schemas.UserDB:  # noqa
+    return await schemas.UserDB.from_tortoise_orm(user)
