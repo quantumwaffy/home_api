@@ -6,15 +6,9 @@ from fastapi_utils.tasks import repeat_every
 from graphql_app.router import router as graphql_router
 from news.currency_parser import get_currency_rate
 from news.router import router as news_router
-from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
 from . import utils
-
-Tortoise.init_models(
-    ["auth.models", "news.models"],
-    "models",
-)
 
 settings: proj_settings.Settings = proj_settings.get_settings()
 
