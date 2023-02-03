@@ -30,8 +30,8 @@ class BaseResolverFuncMeta(abc.ABCMeta):
         mcs._model: Optional[Type[PydanticModel]] = kwargs.pop(mcs._model_attr_name, None)
         assert mcs._model, f"'{mcs._model_attr_name}' kwarg must be provided for class '{name}'"
 
-        if custom_lookup_class := kwargs.pop(mcs._choice_class_attr_name, None):
-            mcs._choice_class = custom_lookup_class
+        if custom_choice_class := kwargs.pop(mcs._choice_class_attr_name, None):
+            mcs._choice_class = custom_choice_class
         return super().__new__(mcs, name, bases, attrs)
 
     @property
@@ -65,7 +65,7 @@ class FilterMeta(BaseResolverFuncMeta):
             wrapped_typehints: tuple[TypeHint, ...] = get_args(typehint)
             camel_field: str = mcs._to_camel_case(field)
             filter_class.__annotations__ |= {
-                camel_field: Optional[mcs._choice_class[wrapped_typehints[0] if wrapped_typehints else Any]]
+                camel_field: Optional[mcs._choice_class[wrapped_typehints[0] if wrapped_typehints else typehint]]
             }
             setattr(filter_class, camel_field, None)
         return filter_class

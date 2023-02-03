@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     SYS_ROOT_PASSWORD: str
     SECRET_HEADER_NAME: str
     SECRET_HEADER_VALUE: str
+    CURRENCY_UPDATE_DELTA_SEC: int
 
     class Config:
         env_file = ".env"

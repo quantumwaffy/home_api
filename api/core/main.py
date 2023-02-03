@@ -1,5 +1,6 @@
 from auth.router import router as auth_router
-from core import database, settings
+from core import database
+from core import settings as proj_settings
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
 from graphql_app.router import router as graphql_router
@@ -14,6 +15,8 @@ Tortoise.init_models(
     ["auth.models", "news.models"],
     "models",
 )
+
+settings: proj_settings.Settings = proj_settings.get_settings()
 
 
 def _init_app() -> FastAPI:
@@ -44,10 +47,10 @@ async def create_init_db_data():
 
 @app.get("/")
 async def root():
-    return {"check_settings": settings.get_settings().dict()}
+    return {"check_settings": settings.dict()}
 
 
 @app.on_event("startup")
-@repeat_every(seconds=1800)
+@repeat_every(seconds=settings.CURRENCY_UPDATE_DELTA_SEC)
 async def update_currency_rates():
     await get_currency_rate()
