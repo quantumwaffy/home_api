@@ -18,20 +18,16 @@ def _init_app() -> FastAPI:
     api.include_router(auth_router)
     api.include_router(news_router)
     api.include_router(graphql_router)
-    return api
-
-
-app: FastAPI = _init_app()
-
-
-@app.on_event("startup")
-async def startup():
     register_tortoise(
-        app,
+        api,
         config=database.TORTOISE_ORM,
         generate_schemas=True,
         add_exception_handlers=True,
     )
+    return api
+
+
+app: FastAPI = _init_app()
 
 
 @app.on_event("startup")
