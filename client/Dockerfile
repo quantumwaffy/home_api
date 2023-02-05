@@ -1,8 +1,8 @@
 FROM node:19.3.0-alpine3.16
 
-WORKDIR /web
+WORKDIR /client
 
-ENV PATH /web/node_modules/.bin:$PATH
+ENV PATH /client/node_modules/.bin:$PATH
 
 EXPOSE 3000
 
