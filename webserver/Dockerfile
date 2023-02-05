@@ -2,8 +2,8 @@ FROM nginx:latest
 
 WORKDIR /webserver
 
-COPY . ./
+COPY nginx.conf /etc/nginx/templates/nginx.conf.template
 
 EXPOSE 80 443
 
-CMD ["nginx", "-c", "/webserver/nginx.conf"]
+CMD ["nginx"]

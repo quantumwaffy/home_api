@@ -27,12 +27,12 @@ services:
 
   db:
     image: postgres:15.1-alpine
-    container_name: db
-    restart: on-failure
-    env_file:
-      - ./api/.env
     ports:
       - "5432:5432"
+    container_name: db
+    env_file:
+      - ./api/.env
+    restart: on-failure
     volumes:
       - psql_data:/var/lib/postgresql/data
 
@@ -41,11 +41,15 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    container_name: nginx
-    restart: on-failure
     depends_on:
       - client
       - api
+    container_name: nginx
+    env_file:
+      - ./webserver/.env
+    environment:
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
+    restart: on-failure
 
 volumes:
   psql_data:
