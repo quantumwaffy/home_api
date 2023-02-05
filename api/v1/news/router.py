@@ -1,6 +1,6 @@
-from auth import dependencies as auth_deps
-from auth import models as auth_models
 from fastapi import APIRouter, Depends, status
+from v1.auth import dependencies as auth_deps
+from v1.auth import models as auth_models
 
 from . import models, schemas
 from .currency_parser import get_currency_rate

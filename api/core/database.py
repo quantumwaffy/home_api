@@ -7,7 +7,7 @@ TORTOISE_ORM = {
     "connections": {"default": settings.get_psql_url()},
     "apps": {
         "models": {
-            "models": ["aerich.models", "auth.models", "news.models"],
+            "models": ["aerich.models", "v1.auth.models", "v1.news.models"],
             "default_connection": "default",
         },
     },

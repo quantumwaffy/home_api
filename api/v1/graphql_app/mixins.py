@@ -1,8 +1,8 @@
 from typing import Any, List, Optional, TypeVar
 
 import strawberry
-from auth import models as auth_models
-from auth.dependencies import get_authenticated_user
+from v1.auth import models as auth_models
+from v1.auth.dependencies import get_authenticated_user
 
 from . import base
 

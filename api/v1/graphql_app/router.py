@@ -1,13 +1,13 @@
 import json
 from typing import Any
 
-from auth import dependencies as auth_deps
-from auth import exceptions as auth_exc
-from auth import schemas as auth_schemas
 from fastapi import Depends
 from starlette.requests import Request
 from starlette.responses import Response
 from strawberry.fastapi import GraphQLRouter
+from v1.auth import dependencies as auth_deps
+from v1.auth import exceptions as auth_exc
+from v1.auth import schemas as auth_schemas
 
 from . import schemas
 

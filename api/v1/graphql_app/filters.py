@@ -1,6 +1,6 @@
 import strawberry
-from auth import schemas as auth_schemas
-from news import schemas as news_schemas
+from v1.auth import schemas as auth_schemas
+from v1.news import schemas as news_schemas
 
 from . import metaclasses
 

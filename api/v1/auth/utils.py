@@ -1,8 +1,10 @@
 import datetime
 from typing import Any
 
+from asyncpg import Connection
 from core import settings
 from core.settings import Settings
+from core.utils import connection
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
@@ -73,3 +75,14 @@ class Authenticator:
         return cls._create_token(
             user.username, settings.JWT_ACCESS_TOKEN_EXPIRE_MIN, settings.JWT_ACCESS_TOKEN_SECRET_KEY
         )
+
+
+@connection
+async def create_root_user(connect: Connection, table_name: str = models.User._meta.db_table) -> None:
+    root_first_last_name: str = settings.SYS_ROOT_USERNAME.capitalize()
+    await connect.execute(
+        f"INSERT INTO {table_name} (username, first_name, last_name, password_hash) "
+        f"values ('{settings.SYS_ROOT_USERNAME}','{root_first_last_name}',"
+        f"'{root_first_last_name}','{Authenticator.get_password_hash(settings.SYS_ROOT_PASSWORD)}') "
+        f"ON CONFLICT DO NOTHING;"
+    )

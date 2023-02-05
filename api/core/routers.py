@@ -1,9 +1,9 @@
 import dataclasses
 
-from auth.router import router as auth_router
 from fastapi import APIRouter
-from graphql_app.router import router as graphql_router
-from news.router import router as news_router
+from v1.auth.router import router as auth_router
+from v1.graphql_app.router import router as graphql_router
+from v1.news.router import router as news_router
 
 
 @dataclasses.dataclass

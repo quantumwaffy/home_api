@@ -1,10 +1,10 @@
 from typing import Optional
 
 import strawberry
-from auth import models as auth_models
-from auth import schemas as auth_schemas
-from news import models as news_models
-from news import schemas as news_schemas
+from v1.auth import models as auth_models
+from v1.auth import schemas as auth_schemas
+from v1.news import models as news_models
+from v1.news import schemas as news_schemas
 
 from . import base, filters, mixins, pagination, permissions
 

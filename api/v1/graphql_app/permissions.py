@@ -1,9 +1,9 @@
 from typing import Any
 
-from auth import models as auth_models
 from fastapi import HTTPException
 from strawberry import BasePermission
 from strawberry.types import Info
+from v1.auth import models as auth_models
 
 from . import mixins
 
