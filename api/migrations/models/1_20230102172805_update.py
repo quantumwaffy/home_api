@@ -15,8 +15,8 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
     "euro_sell" DECIMAL(4,3),
     "rub_buy" DECIMAL(4,3),
     "rub_sell" DECIMAL(4,3),
-    "usd_buy_from_euro" DECIMAL(4,3),
-    "usd_sell_from_euro" DECIMAL(4,3),
+    "usd_buy_from_euro" DECIMAL(5,3),
+    "usd_sell_from_euro" DECIMAL(5,3),
     CONSTRAINT "uid_news__bank__bank_na_187532" UNIQUE ("bank_name", "city_name")
 );
 COMMENT ON TABLE "news__bank_currency" IS 'Bank actual currency info';;"""

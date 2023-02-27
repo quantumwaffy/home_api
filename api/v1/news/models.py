@@ -12,8 +12,8 @@ class BankCurrency(core_base.BaseModel, core_mixins.TimeStamp):
     euro_sell = fields.DecimalField(max_digits=4, decimal_places=3, null=True)
     rub_buy = fields.DecimalField(max_digits=4, decimal_places=3, null=True)
     rub_sell = fields.DecimalField(max_digits=4, decimal_places=3, null=True)
-    usd_buy_from_euro = fields.DecimalField(max_digits=4, decimal_places=3, null=True)
-    usd_sell_from_euro = fields.DecimalField(max_digits=4, decimal_places=3, null=True)
+    usd_buy_from_euro = fields.DecimalField(max_digits=5, decimal_places=3, null=True)
+    usd_sell_from_euro = fields.DecimalField(max_digits=5, decimal_places=3, null=True)
 
     class Meta:
         table_description = "Bank actual currency info"
