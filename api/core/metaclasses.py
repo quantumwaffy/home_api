@@ -1,20 +1,19 @@
 from typing import Type
 
-from tortoise import fields
 from tortoise.models import MetaInfo, Model, ModelMeta
 
 
 class BaseMetaModel(ModelMeta):
     def __new__(mcs, name: str, bases: tuple[type, ...], attrs: dict) -> "Type[Model]":
         model_class: "Type[Model]" = super().__new__(mcs, name, bases, attrs)
+
         if Model in bases:
             return model_class
+
         meta_attr: MetaInfo = model_class._meta
         if not meta_attr.db_table:
             meta_attr.db_table = "_".join((model_class.app_name, mcs._get_name_postfix(name)))
 
-        if not attrs.get("id"):
-            attrs.update(id=fields.IntField(pk=True))
         return model_class
 
     @staticmethod
