@@ -1,18 +1,10 @@
 import {FC, useState, SyntheticEvent, BaseSyntheticEvent, SetStateAction} from "react"
-import * as React from 'react';
-import TextField from "@mui/material/TextField/TextField";
-import FormControl from "@mui/material/FormControl";
-import Button from "@mui/material/Button";
+import {FormControl, Button, TextField, Tabs, Tab, Box} from "@mui/material";
 import LoginIcon from '@mui/icons-material/Login';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
 import "./style.css"
 import axios from "axios";
-// @ts-ignore
-import {getV1Url, getCurrentUser} from "/client/src/utils/api_login.ts";
-// @ts-ignore
-import type {AuthHeader} from "/client/src/utils/api_login.ts";
+import {getV1Url, getCurrentUser} from "../../utils/api_login";
+import type {AuthHeader} from "../../utils/api_login";
 
 
 enum TabValues {
@@ -53,7 +45,7 @@ const Login: FC  = () => {
                         headerName: "Authorization",
                         headerValue: `Bearer ${accessToken}`,
                     };
-                    const currentUser = await getCurrentUser(authHeader);
+                    const currentUser = await getCurrentUser(authHeader, setIsAuth);
                     localStorage.setItem("authHeader", JSON.stringify(authHeader));
                     localStorage.setItem("refreshToken", response.data.refresh_token);
                     localStorage.setItem("user", JSON.stringify(currentUser));
@@ -63,7 +55,7 @@ const Login: FC  = () => {
             .catch(error => setIsAuth(false))
         } else if (tabValue === TabValues.ROOT) {
             const authHeader: AuthHeader = {
-                headerName: process.env.REACT_APP_SECRET_HEADER_NAME,
+                headerName: process.env.REACT_APP_SECRET_HEADER_NAME || "",
                 headerValue: token,
             };
             const currentUser = await getCurrentUser(authHeader, setIsAuth);
