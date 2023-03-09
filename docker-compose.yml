@@ -5,7 +5,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     container_name: api
     env_file:
       - ./api/.env
@@ -33,6 +34,11 @@ services:
     env_file:
       - ./api/.env
     restart: on-failure
+    healthcheck:
+      test: pg_isready -d ${POSTGRES_DB}
+      interval: 3s
+      timeout: 2s
+      retries: 3
     volumes:
       - psql_data:/var/lib/postgresql/data
 
