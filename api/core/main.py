@@ -1,23 +1,26 @@
-from auth.router import router as auth_router
 from core import database
 from core import settings as proj_settings
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
-from graphql_app.router import router as graphql_router
-from news.currency_parser import get_currency_rate
-from news.router import router as news_router
 from tortoise.contrib.fastapi import register_tortoise
+from v1.auth.utils import create_root_user
+from v1.news.currency_parser import get_currency_rate
 
-from . import utils
+from . import routers
 
 settings: proj_settings.Settings = proj_settings.get_settings()
 
 
 def _init_app() -> FastAPI:
     api: FastAPI = FastAPI()
-    api.include_router(auth_router)
-    api.include_router(news_router)
-    api.include_router(graphql_router)
+    for prefix, routs in routers.AppRouter.routers:
+        [api.include_router(router, prefix=prefix) for router in routs]
+    register_tortoise(
+        api,
+        config=database.TORTOISE_ORM,
+        generate_schemas=True,
+        add_exception_handlers=True,
+    )
     return api
 
 
@@ -25,18 +28,8 @@ app: FastAPI = _init_app()
 
 
 @app.on_event("startup")
-async def startup():
-    register_tortoise(
-        app,
-        config=database.TORTOISE_ORM,
-        generate_schemas=True,
-        add_exception_handlers=True,
-    )
-
-
-@app.on_event("startup")
 async def create_init_db_data():
-    await utils.create_root_user()
+    await create_root_user()
 
 
 @app.get("/")

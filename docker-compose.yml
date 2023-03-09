@@ -5,7 +5,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     container_name: api
     env_file:
       - ./api/.env
@@ -13,28 +14,48 @@ services:
     volumes:
       - ./api:/api
 
-  web:
-    build: ./web
+  client:
+    build: ./client
     ports:
       - "3000:3000"
-    container_name: web
+    container_name: client
     env_file:
-      - ./web/.env
-    stdin_open: true
+      - ./client/.env
     restart: on-failure
     volumes:
-      - ./web:/web
-      - node_modules:/web/node_modules
+      - ./client:/client
+      - node_modules:/client/node_modules
 
   db:
     image: postgres:15.1-alpine
-    restart: on-failure
+    ports:
+      - "5432:5432"
+    container_name: db
     env_file:
       - ./api/.env
-    ports:
-      - '5432:5432'
+    restart: on-failure
+    healthcheck:
+      test: pg_isready -d ${POSTGRES_DB}
+      interval: 3s
+      timeout: 2s
+      retries: 3
     volumes:
       - psql_data:/var/lib/postgresql/data
+
+  webserver:
+    build: ./webserver
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - client
+      - api
+    container_name: nginx
+    env_file:
+      - ./webserver/.env
+    environment:
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
+    restart: on-failure
 
 volumes:
   psql_data:

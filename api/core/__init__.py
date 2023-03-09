@@ -1,6 +1,6 @@
 from tortoise import Tortoise
 
 Tortoise.init_models(
-    ["auth.models", "news.models"],
+    ["v1.auth.models", "v1.news.models"],
     "models",
 )
