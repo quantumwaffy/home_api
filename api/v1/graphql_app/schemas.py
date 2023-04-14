@@ -6,7 +6,7 @@ from v1.auth import schemas as auth_schemas
 from v1.news import models as news_models
 from v1.news import schemas as news_schemas
 
-from . import base, filters, mixins, pagination, permissions
+from . import base, filters, mixins, pagination
 
 
 @strawberry.experimental.pydantic.type(model=news_schemas.BankCurrencyView, all_fields=True)
@@ -41,7 +41,8 @@ class UserViewResponse(
 
 @strawberry.type
 class Query:
-    @strawberry.field(permission_classes=[permissions.IsAuthenticated])
+    @strawberry.field()
+    # @strawberry.field(permission_classes=[permissions.IsAuthenticated])
     @pagination.Paginator()
     @base.Filter()
     async def get_currency_rates(
@@ -53,7 +54,8 @@ class Query:
     ) -> BankCurrencyViewResponse:
         return news_models.BankCurrency.all()
 
-    @strawberry.field(permission_classes=[permissions.IsAuthenticated])
+    # @strawberry.field(permission_classes=[permissions.IsAuthenticated])
+    @strawberry.field()
     @pagination.Paginator()
     @base.Filter()
     async def get_users(

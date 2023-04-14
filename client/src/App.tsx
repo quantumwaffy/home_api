@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import {Provider} from 'react-redux';
 import store from './store/store'
+import CurrencyTable from "./Components/CurrencyTable";
 
 const darkTheme = createTheme({
   palette: {
@@ -16,7 +17,7 @@ function App() {
       <Provider store={store}>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
-       <Login/>
+       <CurrencyTable/>
       </ThemeProvider>
       </Provider>
   );
