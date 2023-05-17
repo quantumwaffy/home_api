@@ -12,7 +12,11 @@ settings: proj_settings.Settings = proj_settings.get_settings()
 
 
 def _init_app() -> FastAPI:
-    api: FastAPI = FastAPI()
+    api: FastAPI = FastAPI(
+        debug=settings.DEBUG,
+        swagger_ui_parameters={"persistAuthorization": True},
+        **{"docs_url": None, "redoc_url": None} if not settings.DEBUG else {}
+    )
     for prefix, routs in routers.AppRouter.routers:
         [api.include_router(router, prefix=prefix) for router in routs]
     register_tortoise(
@@ -30,11 +34,6 @@ app: FastAPI = _init_app()
 @app.on_event("startup")
 async def create_init_db_data():
     await create_root_user()
-
-
-@app.get("/")
-async def root():
-    return {"check_settings": settings.dict()}
 
 
 @app.on_event("startup")

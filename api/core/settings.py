@@ -4,6 +4,7 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    DEBUG: bool
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
