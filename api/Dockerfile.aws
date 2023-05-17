@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
 
-FROM public.ecr.aws/lambda/python:3.10.2023.04.13.21
+FROM public.ecr.aws/lambda/python:3.11-preview.2023.05.13.01
 
 RUN pip install poetry --root-user-action=ignore
 
