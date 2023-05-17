@@ -4,60 +4,60 @@ on:
   push:
     branches: ["feature/AWS-deploy"]
 
-  jobs:
-    deploy:
-      name: Deploy
-      runs-on: ubuntu-latest
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-        - name: Create .env file
-          env:
-            ENV_PATH: "api/.env"
-          run: |
-            echo "DEBUG=${{ env.DEBUG }}" > $ENV_PATH
-            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $ENV_PATH
-            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $ENV_PATH
-            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $ENV_PATH
-            echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> $ENV_PATH
-            echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> $ENV_PATH
-            echo "JWT_ACCESS_TOKEN_SECRET_KEY=${{ secrets.JWT_ACCESS_TOKEN_SECRET_KEY }}" >> $ENV_PATH
-            echo "JWT_REFRESH_TOKEN_SECRET_KEY=${{ secrets.JWT_REFRESH_TOKEN_SECRET_KEY }}" >> $ENV_PATH
-            echo "JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}" >> $ENV_PATH
-            echo "JWT_ACCESS_TOKEN_EXPIRE_MIN=${{ env.JWT_ACCESS_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
-            echo "JWT_REFRESH_TOKEN_EXPIRE_MIN=${{ env.JWT_REFRESH_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
-            echo "SYS_ROOT_USERNAME=${{ env.SYS_ROOT_USERNAME }}" >> $ENV_PATH
-            echo "SYS_ROOT_PASSWORD=${{ secrets.SYS_ROOT_PASSWORD }}" >> $ENV_PATH
-            echo "SECRET_HEADER_NAME=${{ env.SECRET_HEADER_NAME }}" >> $ENV_PATH
-            echo "SECRET_HEADER_VALUE=${{ secrets.SECRET_HEADER_VALUE }}" >> $ENV_PATH
-            echo "CURRENCY_UPDATE_DELTA_SEC=${{ env.CURRENCY_UPDATE_DELTA_SEC }}" >> $ENV_PATH
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create .env file
+        env:
+          ENV_PATH: "api/.env"
+        run: |
+          echo "DEBUG=${{ env.DEBUG }}" > $ENV_PATH
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $ENV_PATH
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $ENV_PATH
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $ENV_PATH
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> $ENV_PATH
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> $ENV_PATH
+          echo "JWT_ACCESS_TOKEN_SECRET_KEY=${{ secrets.JWT_ACCESS_TOKEN_SECRET_KEY }}" >> $ENV_PATH
+          echo "JWT_REFRESH_TOKEN_SECRET_KEY=${{ secrets.JWT_REFRESH_TOKEN_SECRET_KEY }}" >> $ENV_PATH
+          echo "JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}" >> $ENV_PATH
+          echo "JWT_ACCESS_TOKEN_EXPIRE_MIN=${{ env.JWT_ACCESS_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
+          echo "JWT_REFRESH_TOKEN_EXPIRE_MIN=${{ env.JWT_REFRESH_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
+          echo "SYS_ROOT_USERNAME=${{ env.SYS_ROOT_USERNAME }}" >> $ENV_PATH
+          echo "SYS_ROOT_PASSWORD=${{ secrets.SYS_ROOT_PASSWORD }}" >> $ENV_PATH
+          echo "SECRET_HEADER_NAME=${{ env.SECRET_HEADER_NAME }}" >> $ENV_PATH
+          echo "SECRET_HEADER_VALUE=${{ secrets.SECRET_HEADER_VALUE }}" >> $ENV_PATH
+          echo "CURRENCY_UPDATE_DELTA_SEC=${{ env.CURRENCY_UPDATE_DELTA_SEC }}" >> $ENV_PATH
 
-        - name: Configure AWS credentials
-          uses: aws-actions/configure-aws-credentials@v1
-          with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-        - name: Login to Amazon ECR
-          id: login-ecr
-          uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-        - name: Build, tag, and push image to Amazon ECR
-          id: build-lambda-api-image
-          env:
-            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            ECR_REPOSITORY: ${{ env.AWS_ECR_REPOSITORY }}
-            IMAGE_TAG: ${{ github.sha }}
-          run: |
-            docker build -f api/Dockerfile.aws -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-lambda-api-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.AWS_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f api/Dockerfile.aws -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-        - name: Update AWS Lambda function
-          id: update-lambda-api-function
-          env:
-            IMAGE_URI: ${{ steps.build-lambda-api-image.outputs.image }}
-          run: |
-            aws lambda update-function-code --function-name ${{ env.AWS_LAMBDA_API_ARN }} --image-uri $IMAGE_URI
+      - name: Update AWS Lambda function
+        id: update-lambda-api-function
+        env:
+          IMAGE_URI: ${{ steps.build-lambda-api-image.outputs.image }}
+        run: |
+          aws lambda update-function-code --function-name ${{ env.AWS_LAMBDA_API_ARN }} --image-uri $IMAGE_URI
