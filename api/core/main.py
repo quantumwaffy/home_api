@@ -2,6 +2,7 @@ from core import database
 from core import settings as proj_settings
 from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
+from mangum import Mangum
 from tortoise.contrib.fastapi import register_tortoise
 from v1.auth.utils import create_root_user
 from v1.news.currency_parser import get_currency_rate
@@ -29,6 +30,8 @@ def _init_app() -> FastAPI:
 
 
 app: FastAPI = _init_app()
+
+handler: Mangum = Mangum(app)
 
 
 @app.on_event("startup")

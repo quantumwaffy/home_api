@@ -930,6 +930,21 @@ htmlsoup = ["BeautifulSoup4"]
 source = ["Cython (>=0.29.7)"]
 
 [[package]]
+name = "mangum"
+version = "0.17.0"
+description = "AWS Lambda support for ASGI applications"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mangum-0.17.0-py3-none-any.whl", hash = "sha256:f00be705605bc4793958df62e4d249abf58d254c39d90bb410d069570206f4a2"},
+    {file = "mangum-0.17.0.tar.gz", hash = "sha256:5b4e26375e12eed051687670466d17968f8b74beecaca432edd4eb4127f78509"},
+]
+
+[package.dependencies]
+typing-extensions = "*"
+
+[[package]]
 name = "multidict"
 version = "6.0.4"
 description = "multidict implementation"
@@ -1692,4 +1707,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "46a40eb54bc32a9c031a7ba55aa73f86a88823e2cc23c3dffaa7cf2374c3bdea"
+content-hash = "ddb6e69383bbe0785659f56efe27f548648701472ca647d6db6f2d42b779ad4e"

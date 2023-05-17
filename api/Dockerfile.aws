@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1.2
+
+FROM public.ecr.aws/lambda/python:3.10.2023.04.13.21
+
+RUN pip install poetry --root-user-action=ignore
+
+COPY poetry.lock pyproject.toml ./
+
+RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --no-root
+
+COPY . ./app
+
+CMD ["app.core.main.handler"]
