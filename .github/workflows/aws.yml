@@ -16,7 +16,7 @@ jobs:
         env:
           ENV_PATH: "api/.env"
         run: |
-          echo "DEBUG=${{ env.DEBUG }}" > $ENV_PATH
+          echo "DEBUG=${{ vars.DEBUG }}" > $ENV_PATH
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $ENV_PATH
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $ENV_PATH
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $ENV_PATH
@@ -25,20 +25,20 @@ jobs:
           echo "JWT_ACCESS_TOKEN_SECRET_KEY=${{ secrets.JWT_ACCESS_TOKEN_SECRET_KEY }}" >> $ENV_PATH
           echo "JWT_REFRESH_TOKEN_SECRET_KEY=${{ secrets.JWT_REFRESH_TOKEN_SECRET_KEY }}" >> $ENV_PATH
           echo "JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}" >> $ENV_PATH
-          echo "JWT_ACCESS_TOKEN_EXPIRE_MIN=${{ env.JWT_ACCESS_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
-          echo "JWT_REFRESH_TOKEN_EXPIRE_MIN=${{ env.JWT_REFRESH_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
-          echo "SYS_ROOT_USERNAME=${{ env.SYS_ROOT_USERNAME }}" >> $ENV_PATH
+          echo "JWT_ACCESS_TOKEN_EXPIRE_MIN=${{ vars.JWT_ACCESS_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
+          echo "JWT_REFRESH_TOKEN_EXPIRE_MIN=${{ vars.JWT_REFRESH_TOKEN_EXPIRE_MIN }}" >> $ENV_PATH
+          echo "SYS_ROOT_USERNAME=${{ vars.SYS_ROOT_USERNAME }}" >> $ENV_PATH
           echo "SYS_ROOT_PASSWORD=${{ secrets.SYS_ROOT_PASSWORD }}" >> $ENV_PATH
-          echo "SECRET_HEADER_NAME=${{ env.SECRET_HEADER_NAME }}" >> $ENV_PATH
+          echo "SECRET_HEADER_NAME=${{ vars.SECRET_HEADER_NAME }}" >> $ENV_PATH
           echo "SECRET_HEADER_VALUE=${{ secrets.SECRET_HEADER_VALUE }}" >> $ENV_PATH
-          echo "CURRENCY_UPDATE_DELTA_SEC=${{ env.CURRENCY_UPDATE_DELTA_SEC }}" >> $ENV_PATH
+          echo "CURRENCY_UPDATE_DELTA_SEC=${{ vars.CURRENCY_UPDATE_DELTA_SEC }}" >> $ENV_PATH
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -48,7 +48,7 @@ jobs:
         id: build-lambda-api-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ env.AWS_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ vars.AWS_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -f api/Dockerfile.aws -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -60,4 +60,4 @@ jobs:
         env:
           IMAGE_URI: ${{ steps.build-lambda-api-image.outputs.image }}
         run: |
-          aws lambda update-function-code --function-name ${{ env.AWS_LAMBDA_API_ARN }} --image-uri $IMAGE_URI
+          aws lambda update-function-code --function-name ${{ vars.AWS_LAMBDA_API_ARN }} --image-uri $IMAGE_URI
