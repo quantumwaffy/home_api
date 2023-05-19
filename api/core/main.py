@@ -1,22 +1,18 @@
 from core import database
-from core import settings as proj_settings
+from core.settings import SETTINGS
 from fastapi import FastAPI
-from fastapi_utils.tasks import repeat_every
 from mangum import Mangum
 from tortoise.contrib.fastapi import register_tortoise
 from v1.auth.utils import create_root_user
-from v1.news.currency_parser import get_currency_rate
 
 from . import routers
-
-settings: proj_settings.Settings = proj_settings.get_settings()
 
 
 def _init_app() -> FastAPI:
     api: FastAPI = FastAPI(
-        debug=settings.DEBUG,
+        debug=SETTINGS.DEBUG,
         swagger_ui_parameters={"persistAuthorization": True},
-        **{"docs_url": None, "redoc_url": None} if not settings.DEBUG else {}
+        **{"docs_url": None, "redoc_url": None} if not SETTINGS.DEBUG else {}
     )
     for prefix, routs in routers.AppRouter.routers:
         [api.include_router(router, prefix=prefix) for router in routs]
@@ -37,9 +33,3 @@ handler: Mangum = Mangum(app)
 @app.on_event("startup")
 async def create_init_db_data():
     await create_root_user()
-
-
-@app.on_event("startup")
-@repeat_every(seconds=settings.CURRENCY_UPDATE_DELTA_SEC)
-async def update_currency_rates():
-    await get_currency_rate()

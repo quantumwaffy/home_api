@@ -2,16 +2,13 @@ import datetime
 from typing import Any
 
 from asyncpg import Connection
-from core import settings
-from core.settings import Settings
-from core.utils import connection
+from core.db_utils import connection
+from core.settings import SETTINGS
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
 
 from . import exceptions, models, schemas
-
-settings: Settings = settings.get_settings()
 
 
 async def check_user_perms(user: models.User | None) -> None:
@@ -23,7 +20,7 @@ async def check_user_perms(user: models.User | None) -> None:
 
 async def get_user_from_token(token, key) -> models.User:
     try:
-        payload: dict[str, Any] = jwt.decode(token, key, algorithms=[settings.JWT_ALGORITHM])
+        payload: dict[str, Any] = jwt.decode(token, key, algorithms=[SETTINGS.JWT_ALGORITHM])
         jwt_payload: schemas.JWTPayload = schemas.JWTPayload(**payload)
         if jwt_payload.expiry_date < datetime.datetime.now():
             raise exceptions.BaseAuthExceptionManager.token_expired
@@ -51,7 +48,7 @@ class Authenticator:
         return jwt.encode(
             {"sub": subject, "exp": expiry_dt},
             key,
-            algorithm=settings.JWT_ALGORITHM,
+            algorithm=SETTINGS.JWT_ALGORITHM,
         )
 
     @classmethod
@@ -62,27 +59,27 @@ class Authenticator:
             raise exceptions.BaseAuthExceptionManager.authentication_error
         return schemas.TokenGeneratedData(
             access_token=cls._create_token(
-                username, settings.JWT_ACCESS_TOKEN_EXPIRE_MIN, settings.JWT_ACCESS_TOKEN_SECRET_KEY
+                username, SETTINGS.JWT_ACCESS_TOKEN_EXPIRE_MIN, SETTINGS.JWT_ACCESS_TOKEN_SECRET_KEY
             ),
             refresh_token=cls._create_token(
-                username, settings.JWT_REFRESH_TOKEN_EXPIRE_MIN, settings.JWT_REFRESH_TOKEN_SECRET_KEY
+                username, SETTINGS.JWT_REFRESH_TOKEN_EXPIRE_MIN, SETTINGS.JWT_REFRESH_TOKEN_SECRET_KEY
             ),
         )
 
     @classmethod
     async def get_refreshed_access_token(cls, refresh_token: str) -> str:
-        user: models.User = await get_user_from_token(refresh_token, settings.JWT_REFRESH_TOKEN_SECRET_KEY)
+        user: models.User = await get_user_from_token(refresh_token, SETTINGS.JWT_REFRESH_TOKEN_SECRET_KEY)
         return cls._create_token(
-            user.username, settings.JWT_ACCESS_TOKEN_EXPIRE_MIN, settings.JWT_ACCESS_TOKEN_SECRET_KEY
+            user.username, SETTINGS.JWT_ACCESS_TOKEN_EXPIRE_MIN, SETTINGS.JWT_ACCESS_TOKEN_SECRET_KEY
         )
 
 
-@connection
+@connection(SETTINGS.psql_url)
 async def create_root_user(connect: Connection, table_name: str = models.User._meta.db_table) -> None:
-    root_first_last_name: str = settings.SYS_ROOT_USERNAME.capitalize()
+    root_first_last_name: str = SETTINGS.SYS_ROOT_USERNAME.capitalize()
     await connect.execute(
         f"INSERT INTO {table_name} (username, first_name, last_name, password_hash) "
-        f"values ('{settings.SYS_ROOT_USERNAME}','{root_first_last_name}',"
-        f"'{root_first_last_name}','{Authenticator.get_password_hash(settings.SYS_ROOT_PASSWORD)}') "
+        f"values ('{SETTINGS.SYS_ROOT_USERNAME}','{root_first_last_name}',"
+        f"'{root_first_last_name}','{Authenticator.get_password_hash(SETTINGS.SYS_ROOT_PASSWORD)}') "
         f"ON CONFLICT DO NOTHING;"
     )

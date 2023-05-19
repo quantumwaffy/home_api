@@ -1,8 +1,10 @@
-name: Deploy to AWS Lambda
+name: Deploy API to AWS Lambda
 
 on:
   push:
     branches: ["feature/AWS-deploy"]
+    paths:
+      - "api/**"
 
 jobs:
   deploy:

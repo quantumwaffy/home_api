@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "currency-parser"
+version = "0.1.0"
+description = ""
+authors = ["quantumwaffy <sashchystyh@yandex.ru>"]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiohttp = "^3.8.4"
+beautifulsoup4 = "^4.12.2"
+lxml = "^4.9.2"
+tortoise-orm = {extras = ["asyncpg"], version = "^0.19.2"}
+pydantic = "^1.10.7"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
